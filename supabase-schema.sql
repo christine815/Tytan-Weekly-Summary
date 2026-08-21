@@ -13,6 +13,8 @@ create table if not exists submissions (
   future_automations text not null,
   human_impact text not null,
   challenges text not null,
+  next_steps text not null default '',
+  is_test boolean not null default false,
   submitted_at timestamptz not null default now()
 );
 

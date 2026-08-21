@@ -24,7 +24,8 @@ const SECTIONS: {
     | "efficiency_learnings"
     | "future_automations"
     | "human_impact"
-    | "challenges";
+    | "challenges"
+    | "next_steps";
   title: string;
   hint: string;
 }[] = [
@@ -58,6 +59,11 @@ const SECTIONS: {
     title: "Challenges or Roadblocks",
     hint: "Note any obstacles, especially those slowing down automation or scaling progress. Examples: tool limitations, process gaps, cross-team coordination.",
   },
+  {
+    key: "next_steps",
+    title: "Next Steps / Preparations",
+    hint: "What are you planning or preparing for next week? Flag anything that needs setup, coordination, or a heads-up in advance.",
+  },
 ];
 
 type FormState = {
@@ -71,13 +77,18 @@ const emptySections = SECTIONS.reduce(
   {} as Record<(typeof SECTIONS)[number]["key"], string>
 );
 
-export default function Home() {
-  const [form, setForm] = useState<FormState>({
+function initialForm(): FormState {
+  return {
     member_name: "",
     shift_schedule: "",
     week_range: currentWorkWeekLabel(),
     ...emptySections,
-  });
+  };
+}
+
+export default function Home() {
+  const [form, setForm] = useState<FormState>(initialForm());
+  const [isTest, setIsTest] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -97,7 +108,7 @@ export default function Home() {
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, is_test: isTest }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -120,19 +131,16 @@ export default function Home() {
             Report sent
           </div>
           <p className="page-sub" style={{ marginBottom: 24 }}>
-            Your weekly summary for {form.week_range} has been logged and your
-            leaders have been notified.
+            {isTest
+              ? `Your test submission for ${form.week_range} was saved, and a copy of the notification email was sent to you so you can confirm it's working.`
+              : `Your weekly summary for ${form.week_range} has been logged and your leader has been notified.`}
           </p>
           <button
             className="btn-secondary"
             onClick={() => {
               setDone(false);
-              setForm({
-                member_name: "",
-                shift_schedule: "",
-                week_range: currentWorkWeekLabel(),
-                ...emptySections,
-              });
+              setIsTest(false);
+              setForm(initialForm());
             }}
           >
             Submit another report
@@ -144,26 +152,23 @@ export default function Home() {
 
   return (
     <div className="shell">
+      <div className="wordmark">TYTAN TEAMS</div>
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "baseline",
+          marginBottom: 24,
         }}
       >
         <div>
-          <div className="eyebrow">Tytan · Weekly Reporting</div>
+          <div className="eyebrow">Weekly Reporting</div>
           <h1 className="page-title">Weekly Work Summary</h1>
         </div>
         <a className="nav-link" href="/dashboard">
           Dashboard →
         </a>
       </div>
-      <p className="page-sub">
-        Fill this out once a week, same six sections your team already
-        uses. Submitting sends it straight to your leaders — no copy-paste
-        into email needed.
-      </p>
 
       {error && <div className="error-banner">{error}</div>}
 
@@ -233,8 +238,17 @@ export default function Home() {
           </div>
         ))}
 
+        <label className="test-toggle">
+          <input
+            type="checkbox"
+            checked={isTest}
+            onChange={(e) => setIsTest(e.target.checked)}
+          />
+          This is a test submission — send the notification to me only
+        </label>
+
         <button className="btn-primary" type="submit" disabled={submitting}>
-          {submitting ? "Sending…" : "Submit report"}
+          {submitting ? "Sending…" : isTest ? "Submit test" : "Submit report"}
         </button>
       </form>
     </div>

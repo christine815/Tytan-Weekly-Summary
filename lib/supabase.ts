@@ -31,6 +31,8 @@ export interface Submission {
   future_automations: string;
   human_impact: string;
   challenges: string;
+  next_steps: string;
+  is_test: boolean;
   submitted_at: string;
 }
 

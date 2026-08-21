@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { TEAM } from "@/lib/team";
 import type { Submission } from "@/lib/supabase";
+import type { Viewer } from "@/lib/team";
 
 const SECTION_LABELS: { key: keyof Submission; title: string }[] = [
   { key: "key_projects", title: "1. Key Projects & Automation Wins" },
@@ -11,20 +12,31 @@ const SECTION_LABELS: { key: keyof Submission; title: string }[] = [
   { key: "future_automations", title: "4. Future Automations / Ideas" },
   { key: "human_impact", title: "5. Human Impact" },
   { key: "challenges", title: "6. Challenges or Roadblocks" },
+  { key: "next_steps", title: "7. Next Steps / Preparations" },
 ];
 
 export default function Dashboard() {
+  const [viewer, setViewer] = useState<Viewer | null>(null);
   const [submissions, setSubmissions] = useState<Submission[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [unauthorized, setUnauthorized] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState<string>("");
   const [memberFilter, setMemberFilter] = useState<string>("");
   const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/submissions")
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (r.status === 401) {
+          setUnauthorized(true);
+          return null;
+        }
+        return r.json();
+      })
       .then((data) => {
+        if (!data) return;
         if (data.error) throw new Error(data.error);
+        setViewer(data.viewer);
         setSubmissions(data.submissions);
         if (data.submissions?.length) {
           setSelectedWeek(data.submissions[0].week_range);
@@ -32,6 +44,11 @@ export default function Dashboard() {
       })
       .catch((err) => setLoadError(err.message || "Could not load submissions."));
   }, []);
+
+  const visibleTeamNames = useMemo(() => {
+    if (!viewer) return [];
+    return viewer.seesAll ? TEAM.map((m) => m.name) : viewer.visibleNames;
+  }, [viewer]);
 
   const weeks = useMemo(() => {
     if (!submissions) return [];
@@ -45,7 +62,7 @@ export default function Dashboard() {
   const submittedNamesForWeek = useMemo(() => {
     if (!submissions || !selectedWeek) return new Set<string>();
     return new Set(
-      submissions.filter((s) => s.week_range === selectedWeek).map((s) => s.member_name)
+      submissions.filter((s) => s.week_range === selectedWeek && !s.is_test).map((s) => s.member_name)
     );
   }, [submissions, selectedWeek]);
 
@@ -64,21 +81,39 @@ export default function Dashboard() {
     });
   }, [submissions, selectedWeek, memberFilter]);
 
+  async function handleLogout() {
+    await fetch("/api/dashboard-logout", { method: "POST" });
+    window.location.href = "/dashboard/login";
+  }
+
+  if (unauthorized) {
+    // Middleware should normally catch this before the page even loads,
+    // but this covers the case where a session cookie expired mid-visit.
+    if (typeof window !== "undefined") window.location.href = "/dashboard/login";
+    return null;
+  }
+
   return (
     <div className="shell shell--wide">
+      <div className="wordmark">TYTAN TEAMS</div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
         <div>
-          <div className="eyebrow">Tytan · Weekly Reporting</div>
+          <div className="eyebrow">Weekly Reporting</div>
           <h1 className="page-title">Leader Dashboard</h1>
         </div>
         <a className="nav-link" href="/">
           ← Submit a report
         </a>
       </div>
-      <p className="page-sub">
-        Roll call shows who's turned in this week's summary. Click a
-        submitted name to jump to their report below.
-      </p>
+
+      {viewer && (
+        <div className="viewer-bar">
+          Viewing as <strong>{viewer.label}</strong>
+          <button className="btn-secondary" onClick={handleLogout} style={{ padding: "4px 10px" }}>
+            Log out
+          </button>
+        </div>
+      )}
 
       {loadError && <div className="error-banner">{loadError}</div>}
 
@@ -109,7 +144,7 @@ export default function Dashboard() {
 
             <label>Roll call</label>
             <div className="rollcall">
-              {TEAM.map((m) => {
+              {TEAM.filter((m) => visibleTeamNames.includes(m.name)).map((m) => {
                 const submitted = submittedNamesForWeek.has(m.name);
                 return (
                   <div
@@ -145,7 +180,7 @@ export default function Dashboard() {
             </select>
             <select value={memberFilter} onChange={(e) => setMemberFilter(e.target.value)}>
               <option value="">All team members</option>
-              {TEAM.map((m) => (
+              {TEAM.filter((m) => visibleTeamNames.includes(m.name)).map((m) => (
                 <option key={m.email} value={m.name}>
                   {m.name}
                 </option>
@@ -165,7 +200,10 @@ export default function Dashboard() {
                     onClick={() => setOpenId(open ? null : s.id)}
                   >
                     <div>
-                      <div className="submission-name">{s.member_name}</div>
+                      <div className="submission-name">
+                        {s.member_name}
+                        {s.is_test && <span className="test-badge">Test</span>}
+                      </div>
                       <div className="submission-meta">
                         {s.position} · {s.shift_schedule} · submitted{" "}
                         {new Date(s.submitted_at).toLocaleDateString("en-US", {

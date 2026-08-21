@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient, type NewSubmission } from "@/lib/supabase";
 import { sendSubmissionNotification } from "@/lib/email";
-import { findMember } from "@/lib/team";
+import { findMember, TEST_NOTIFY_EMAIL } from "@/lib/team";
 
 const REQUIRED_FIELDS: (keyof NewSubmission)[] = [
   "member_name",
@@ -13,6 +13,7 @@ const REQUIRED_FIELDS: (keyof NewSubmission)[] = [
   "future_automations",
   "human_impact",
   "challenges",
+  "next_steps",
 ];
 
 export async function POST(req: NextRequest) {
@@ -53,6 +54,8 @@ export async function POST(req: NextRequest) {
     future_automations: body.future_automations!,
     human_impact: body.human_impact!,
     challenges: body.challenges!,
+    next_steps: body.next_steps!,
+    is_test: Boolean(body.is_test),
   };
 
   try {
@@ -67,7 +70,8 @@ export async function POST(req: NextRequest) {
 
     // Don't let an email hiccup fail the submission — the report is saved either way.
     try {
-      await sendSubmissionNotification(submission);
+      const recipient = submission.is_test ? TEST_NOTIFY_EMAIL : member.reportsTo;
+      await sendSubmissionNotification(submission, recipient);
     } catch (emailErr) {
       console.error("Notification email failed:", emailErr);
     }

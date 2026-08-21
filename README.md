@@ -70,22 +70,78 @@ npm run dev
 Then open `http://localhost:3000` for the form and
 `http://localhost:3000/dashboard` for the dashboard.
 
+## What's new since the first version
+
+- **7th section**: "Next Steps / Preparations."
+- **Test mode**: a checkbox on the form ("This is a test submission — send
+  the notification to me only"). It saves the report normally but routes
+  the notification to `christine@tytanteams.com` (see `TEST_NOTIFY_EMAIL`
+  in `lib/team.ts`) instead of the real leader, so anyone can confirm
+  email delivery works without pinging someone else.
+- **Leader-specific routing**: each member's report now emails only their
+  direct leader (not a broadcast to everyone). Leaders' own reports go to
+  the CEO. This is all defined in `lib/team.ts` via each person's
+  `reportsTo` field.
+- **David Brown**: back in the roster, reporting to no one — his reports
+  save normally but don't trigger a notification (nobody configured to
+  receive it).
+- **Dashboard access, done properly**: only 5 people can log into
+  `/dashboard` at all — Britt and the 4 leaders — each with **their own
+  separate password** (see the 5 `DASHBOARD_PASSWORD_*` variables below).
+  There's no dropdown to switch identities and no shared password: the
+  server decides what each person can see based on which password they
+  entered, and a leader only ever sees their own team's reports (Britt
+  sees everyone). Regular team members have no path into the dashboard at
+  all. This is enforced server-side in `app/api/submissions/route.ts`, not
+  just hidden in the UI.
+- **No logo — brand colors instead**: the header uses a small "TYTAN
+  TEAMS" wordmark and the whole UI is now built on your brand palette
+  (navy `#10125F`, yellow `#E4C423`) rather than a placeholder image.
+
+### New environment variables to add in Vercel
+
+| Key | Value |
+|---|---|
+| `DASHBOARD_PASSWORD_BRITT` | A password only Britt knows |
+| `DASHBOARD_PASSWORD_RICHELLE` | A password only Richelle knows |
+| `DASHBOARD_PASSWORD_BLANDO` | A password only Blando knows |
+| `DASHBOARD_PASSWORD_AIRA` | A password only Aira knows |
+| `DASHBOARD_PASSWORD_JOHNNEL` | A password only Johnnel knows |
+
+Give each person their own password directly — don't share one password
+among all of them, since that defeats the point of keeping teams separate.
+
+### If you already have a live Supabase database
+
+Run `supabase-migration-2.sql` in the Supabase SQL Editor (Project → SQL
+Editor → New query → paste → Run) — it adds the two new columns
+(`next_steps`, `is_test`) without touching any reports you've already
+saved. If you're setting up Supabase fresh, `supabase-schema.sql` already
+includes them.
+
 ## Updating the team roster
 
-Open `lib/team.ts` and edit the `TEAM` array — add a person, change a
-name's role to include "Leader" to have them start receiving notification
-emails, or remove someone. No database change needed; this list is the
-single source of truth for the dropdown, the roll call, and the
-notification recipients.
+Open `lib/team.ts`:
+
+- **Adding/removing a regular team member**: edit the `TEAM` array, set
+  their `reportsTo` to their leader's email. No database change needed.
+- **Adding/removing a leader**: they need a `TEAM` entry (with `reportsTo`
+  set to `CEO_EMAIL`), *and* an entry in the `VIEWERS` array (with an `id`
+  used to name their env var, and `visibleNames` listing themselves plus
+  their direct reports) — plus a matching `DASHBOARD_PASSWORD_<ID>`
+  variable in Vercel.
 
 ## Notes / things to know
 
-- There's no login. The dashboard link is not linked from the public form
-  page, but it isn't access-controlled — anyone with the URL can view all
-  reports. If that becomes a concern later, adding a simple shared
-  password gate is a small follow-up.
+- Dashboard access is a lightweight, password-per-person gate suited to
+  an internal tool — not a full login system with accounts or audit logs.
+  It's enforced server-side (the API itself refuses to return reports
+  outside a viewer's team), which is the meaningful part; if you want
+  something even stronger later (e.g. a magic link emailed to each
+  leader), that's a doable follow-up.
 - If Resend isn't configured yet, submissions still save fine — the email
   step just gets skipped with a log line, so you can test the form before
   finishing email setup.
 - Week is free text (defaults to the current Mon–Fri) so it matches
   whatever format your team already uses, e.g. "Aug. 18–22, 2025".
+
