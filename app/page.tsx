@@ -66,9 +66,13 @@ const SECTIONS: {
   },
 ];
 
+const SHIFT_DAYS = ["Mon–Thurs", "Tue–Fri"];
+const SHIFT_TIMES = ["9PM", "10PM", "11PM", "12MN"];
+
 type FormState = {
   member_name: string;
-  shift_schedule: string;
+  shift_days: string;
+  shift_time: string;
   week_range: string;
 } & Record<(typeof SECTIONS)[number]["key"], string>;
 
@@ -80,7 +84,8 @@ const emptySections = SECTIONS.reduce(
 function initialForm(): FormState {
   return {
     member_name: "",
-    shift_schedule: "",
+    shift_days: "",
+    shift_time: "",
     week_range: currentWorkWeekLabel(),
     ...emptySections,
   };
@@ -108,7 +113,11 @@ export default function Home() {
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, is_test: isTest }),
+        body: JSON.stringify({
+          ...form,
+          shift_schedule: `${form.shift_days}, ${form.shift_time} start`,
+          is_test: isTest,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -133,7 +142,7 @@ export default function Home() {
           <p className="page-sub" style={{ marginBottom: 24 }}>
             {isTest
               ? `Your test submission for ${form.week_range} was saved, and a copy of the notification email was sent to you so you can confirm it's working.`
-              : `Your weekly summary for ${form.week_range} has been logged and your leader has been notified.`}
+              : `Your weekly summary for ${form.week_range} has been logged, your leader has been notified, and a copy was sent to your own inbox.`}
           </p>
           <button
             className="btn-secondary"
@@ -152,7 +161,6 @@ export default function Home() {
 
   return (
     <div className="shell">
-      <div className="wordmark">TYTAN TEAMS</div>
       <div
         style={{
           display: "flex",
@@ -167,6 +175,11 @@ export default function Home() {
         </div>
         <a className="nav-link" href="/dashboard">
           Dashboard →
+        </a>
+      </div>
+      <div style={{ marginBottom: 24 }}>
+        <a className="nav-link" href="/my-reports">
+          View my submitted reports →
         </a>
       </div>
 
@@ -198,9 +211,8 @@ export default function Home() {
               id="week_range"
               type="text"
               value={form.week_range}
-              onChange={(e) => update("week_range", e.target.value)}
-              placeholder="Aug. 18–22, 2025"
-              required
+              readOnly
+              title="Automatically set to the current work week"
             />
           </div>
         </div>
@@ -210,16 +222,44 @@ export default function Home() {
             <label>Current Position</label>
             <input type="text" value={member?.position ?? ""} disabled placeholder="Auto-filled from your name" />
           </div>
+        </div>
+
+        <div className="field-row">
           <div className="field">
-            <label htmlFor="shift_schedule">Shift Schedule</label>
-            <input
-              id="shift_schedule"
-              type="text"
-              value={form.shift_schedule}
-              onChange={(e) => update("shift_schedule", e.target.value)}
-              placeholder="e.g. Mon–Fri, 9 AM–6 PM PHT"
+            <label htmlFor="shift_days">Shift Days</label>
+            <select
+              id="shift_days"
+              value={form.shift_days}
+              onChange={(e) => update("shift_days", e.target.value)}
               required
-            />
+            >
+              <option value="" disabled>
+                Select days
+              </option>
+              {SHIFT_DAYS.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="shift_time">Shift Start Time</label>
+            <select
+              id="shift_time"
+              value={form.shift_time}
+              onChange={(e) => update("shift_time", e.target.value)}
+              required
+            >
+              <option value="" disabled>
+                Select start time
+              </option>
+              {SHIFT_TIMES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

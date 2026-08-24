@@ -21,7 +21,13 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <div className="site-header">
+          <span className="site-header-mark">TYTAN TEAMS</span>
+          <span className="site-header-sub">Weekly Reporting</span>
+        </div>
+        {children}
+      </body>
     </html>
   );
 }

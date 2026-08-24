@@ -56,24 +56,19 @@ export function buildReportHtml(sub: NewSubmission, dashboardUrl?: string) {
 }
 
 /**
- * Sends the notification email. For a normal submission this goes to the
- * submitter's direct leader (or the CEO, for leaders' own reports). For a
- * test submission, it's redirected to TEST_NOTIFY_EMAIL instead, so
- * delivery can be confirmed without emailing a real leader.
+ * Sends the notification email. Normally this goes to the submitter's
+ * direct leader (or the CEO, for leaders' own reports), with the
+ * submitter CC'd so they always keep their own copy. If someone has no
+ * leader configured (e.g. an unmanaged member), the email still goes
+ * straight to the submitter instead of being skipped entirely — everyone
+ * gets a copy of what they submitted. For a test submission, the "to" is
+ * redirected to TEST_NOTIFY_EMAIL instead, so delivery can be confirmed
+ * without emailing a real leader.
  */
 export async function sendSubmissionNotification(
   sub: NewSubmission,
   recipientEmail: string | undefined
 ) {
-  const to = sub.is_test ? TEST_NOTIFY_EMAIL : recipientEmail;
-
-  if (!to) {
-    console.warn(
-      `No reportsTo configured for ${sub.member_name} — skipping notification.`
-    );
-    return { skipped: true, reason: "no recipient configured" };
-  }
-
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.NOTIFY_FROM_EMAIL;
 
@@ -84,6 +79,10 @@ export async function sendSubmissionNotification(
     return { skipped: true, reason: "email not configured" };
   }
 
+  const to = sub.is_test ? TEST_NOTIFY_EMAIL : recipientEmail || sub.member_email;
+  // Don't CC if the submitter IS already the "to" recipient (avoids a duplicate).
+  const cc = sub.member_email && sub.member_email !== to ? [sub.member_email] : undefined;
+
   const resend = new Resend(apiKey);
   const dashboardUrl = process.env.NEXT_PUBLIC_APP_URL
     ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
@@ -92,6 +91,7 @@ export async function sendSubmissionNotification(
   return resend.emails.send({
     from,
     to: [to],
+    ...(cc ? { cc } : {}),
     subject: `${sub.is_test ? "[TEST] " : ""}Weekly Summary — ${sub.member_name} (${sub.week_range})`,
     html: buildReportHtml(sub, dashboardUrl),
   });

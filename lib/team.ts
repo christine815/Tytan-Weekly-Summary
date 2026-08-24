@@ -23,31 +23,31 @@ export const TEST_NOTIFY_EMAIL = "christine@tytanteams.com";
 export const TEAM: TeamMember[] = [
   { name: "Britt Johnson", email: CEO_EMAIL, role: "Owner+CEO", position: "Owner / CEO" },
 
-  // Richelle's team
-  { name: "Richelle Manahan", email: "richelle@tytanteams.com", role: "Member+Leader", position: "Team Member / Leader", reportsTo: CEO_EMAIL },
-  { name: "Alida Mae Feliciano", email: "alida@tytanteams.com", role: "Member", position: "Team Member", reportsTo: "richelle@tytanteams.com" },
-  { name: "Monique Sariego", email: "monique@tytanteams.com", role: "Member", position: "Team Member", reportsTo: "richelle@tytanteams.com" },
-  { name: "Christine Go", email: "christine@tytanteams.com", role: "Member", position: "Team Member", reportsTo: "richelle@tytanteams.com" },
-  { name: "Lysan Camille Simbulan", email: "lysan@tytanteams.com", role: "Member", position: "Team Member", reportsTo: "richelle@tytanteams.com" },
-  { name: "Zenah Smalley", email: "zenah@tytanteams.com", role: "Member", position: "Team Member", reportsTo: "richelle@tytanteams.com" },
+  // Richelle's team — People & Culture
+  { name: "Richelle Manahan", email: "richelle@tytanteams.com", role: "Member+Leader", position: "People & Culture Team Leader", reportsTo: CEO_EMAIL },
+  { name: "Alida Mae Feliciano", email: "alida@tytanteams.com", role: "Member", position: "People & Culture", reportsTo: "richelle@tytanteams.com" },
+  { name: "Monique Sariego", email: "monique@tytanteams.com", role: "Member", position: "People & Culture", reportsTo: "richelle@tytanteams.com" },
+  { name: "Christine Go", email: "christine@tytanteams.com", role: "Member", position: "Business Development & Revenue", reportsTo: "richelle@tytanteams.com" },
+  { name: "Lysan Camille Simbulan", email: "lysan@tytanteams.com", role: "Member", position: "Business Development & Revenue", reportsTo: "richelle@tytanteams.com" },
+  { name: "Zenah Smalley", email: "zenah@tytanteams.com", role: "Member", position: "Business Development & Revenue", reportsTo: "richelle@tytanteams.com" },
 
-  // Blando — leader with no direct reports yet
-  { name: "Blando Baldomero Natividad", email: "blando@tytanteams.com", role: "Member+Leader", position: "Team Member / Leader", reportsTo: CEO_EMAIL },
+  // Blando — Client Success & Strategic Accounts, no direct reports yet
+  { name: "Blando Baldomero Natividad", email: "blando@tytanteams.com", role: "Member+Leader", position: "Client Success & Strategic Accounts Team Leader", reportsTo: CEO_EMAIL },
 
-  // Aira's team
-  { name: "Aira Asuncion", email: "aira@tytanteams.com", role: "Member+Leader", position: "Team Member / Leader", reportsTo: CEO_EMAIL },
-  { name: "Geminiano Somera De Guzman", email: "bong@tytanteams.com", role: "Member", position: "Team Member", reportsTo: "aira@tytanteams.com" },
-  { name: "Aliza Divine Torres", email: "aliza@tytanteams.com", role: "Member", position: "Team Member", reportsTo: "aira@tytanteams.com" },
+  // Aira's team — Marketing & Creative
+  { name: "Aira Asuncion", email: "aira@tytanteams.com", role: "Member+Leader", position: "Marketing & Creative Team Leader", reportsTo: CEO_EMAIL },
+  { name: "Geminiano Somera De Guzman", email: "bong@tytanteams.com", role: "Member", position: "Marketing & Creative", reportsTo: "aira@tytanteams.com" },
+  { name: "Aliza Divine Torres", email: "aliza@tytanteams.com", role: "Member", position: "Marketing & Creative", reportsTo: "aira@tytanteams.com" },
 
-  // Johnnel's team
-  { name: "Johnnel Lamigo", email: "johnnel@tytanteams.com", role: "Member+Leader", position: "Team Member / Leader", reportsTo: CEO_EMAIL },
-  { name: "Elijah Jake Sagpang", email: "elijah@tytanteams.com", role: "Member", position: "Team Member", reportsTo: "johnnel@tytanteams.com" },
-  { name: "Laarnie Ivy Pascua", email: "laarnie@tytanteams.com", role: "Member", position: "Team Member", reportsTo: "johnnel@tytanteams.com" },
-  { name: "Maria Marina Alayon", email: "maria@tytanteams.com", role: "Member", position: "Team Member", reportsTo: "johnnel@tytanteams.com" },
+  // Johnnel's team — Operations & Enablement
+  { name: "Johnnel Lamigo", email: "johnnel@tytanteams.com", role: "Member+Leader", position: "Operations & Enablement Team Leader", reportsTo: CEO_EMAIL },
+  { name: "Elijah Jake Sagpang", email: "elijah@tytanteams.com", role: "Member", position: "Operations & Enablement", reportsTo: "johnnel@tytanteams.com" },
+  { name: "Laarnie Ivy Pascua", email: "laarnie@tytanteams.com", role: "Member", position: "Operations & Enablement", reportsTo: "johnnel@tytanteams.com" },
+  { name: "Maria Marina Alayon", email: "maria@tytanteams.com", role: "Member", position: "Operations & Enablement", reportsTo: "johnnel@tytanteams.com" },
 
   // Not under any leader, and not a leader himself — no notification
   // recipient configured, so his reports simply save without an email.
-  { name: "David Brown", email: "david@tytanteams.com", role: "Member", position: "Team Member" },
+  { name: "David Brown", email: "david@tytanteams.com", role: "Member", position: "Sales" },
 ];
 
 export function findMember(name: string): TeamMember | undefined {
@@ -68,7 +68,7 @@ export interface Viewer {
 }
 
 export const VIEWERS: Viewer[] = [
-  { id: "britt", label: "Britt Johnson (Owner/CEO — sees everyone)", email: CEO_EMAIL, visibleNames: [], seesAll: true },
+  { id: "britt", label: "Britt Johnson", email: CEO_EMAIL, visibleNames: [], seesAll: true },
   {
     id: "richelle",
     label: "Richelle Manahan",

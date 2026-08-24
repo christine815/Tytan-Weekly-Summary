@@ -95,7 +95,6 @@ export default function Dashboard() {
 
   return (
     <div className="shell shell--wide">
-      <div className="wordmark">TYTAN TEAMS</div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
         <div>
           <div className="eyebrow">Weekly Reporting</div>

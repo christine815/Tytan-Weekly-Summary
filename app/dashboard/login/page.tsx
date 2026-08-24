@@ -31,7 +31,6 @@ export default function DashboardLogin() {
   return (
     <div className="shell">
       <div className="auth-screen">
-        <div className="wordmark">TYTAN TEAMS</div>
         <div className="eyebrow">Weekly Reporting</div>
         <h1 className="page-title">Leader Dashboard</h1>
         <p className="page-sub">
