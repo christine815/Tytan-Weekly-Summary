@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient, type NewSubmission } from "@/lib/supabase";
 import { sendSubmissionNotification } from "@/lib/email";
-import { findMember, TEST_NOTIFY_EMAIL } from "@/lib/team";
+import { findMember } from "@/lib/team";
 
 const REQUIRED_FIELDS: (keyof NewSubmission)[] = [
   "member_name",
@@ -70,8 +70,7 @@ export async function POST(req: NextRequest) {
 
     // Don't let an email hiccup fail the submission — the report is saved either way.
     try {
-      const recipient = submission.is_test ? TEST_NOTIFY_EMAIL : member.reportsTo;
-      await sendSubmissionNotification(submission, recipient);
+      await sendSubmissionNotification(submission, member.reportsTo);
     } catch (emailErr) {
       console.error("Notification email failed:", emailErr);
     }

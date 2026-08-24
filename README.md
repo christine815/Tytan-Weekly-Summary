@@ -73,11 +73,11 @@ Then open `http://localhost:3000` for the form and
 ## What's new since the first version
 
 - **7th section**: "Next Steps / Preparations."
-- **Test mode**: a checkbox on the form ("This is a test submission — send
-  the notification to me only"). It saves the report normally but routes
-  the notification to `christine@tytanteams.com` (see `TEST_NOTIFY_EMAIL`
-  in `lib/team.ts`) instead of the real leader, so anyone can confirm
-  email delivery works without pinging someone else.
+- **Test mode**: a checkbox on the form ("This is a test submission — only
+  send the notification to my own email"). It saves the report normally
+  but routes the notification to whoever is submitting, instead of their
+  real leader, so anyone can confirm email delivery works without pinging
+  someone else.
 - **Leader-specific routing**: each member's report now emails only their
   direct leader (not a broadcast to everyone). Leaders' own reports go to
   the CEO. This is all defined in `lib/team.ts` via each person's
@@ -162,6 +162,17 @@ Open `lib/team.ts`:
   variable in Vercel.
 
 ## Notes / things to know
+
+- **Favicon**: `app/icon.svg` gives the site a real browser-tab icon
+  (navy square, yellow "T") instead of the generic globe browsers show
+  when no icon is set — no code changes needed elsewhere, Next.js picks
+  it up automatically.
+- **Print view**: every report row on the dashboard and "My Submitted
+  Reports" now has a "Print" link, opening a clean single-report view at
+  `/print/[id]` with a "Print / Save as PDF" button.
+- **Last submitted**: the form now shows "You last submitted for [week]
+  on [date]" once someone picks their name, so people can tell at a
+  glance whether they've already done this week's report.
 
 - Dashboard access is a lightweight, password-per-person gate suited to
   an internal tool — not a full login system with accounts or audit logs.

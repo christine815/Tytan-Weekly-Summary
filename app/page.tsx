@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TEAM, findMember } from "@/lib/team";
 import { currentWorkWeekLabel } from "@/lib/week";
 
@@ -84,8 +84,41 @@ export default function Home() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [lastSubmitted, setLastSubmitted] = useState<{ week: string; date: string } | null | undefined>(
+    undefined
+  );
 
   const member = useMemo(() => findMember(form.member_name), [form.member_name]);
+
+  useEffect(() => {
+    if (!form.member_name) {
+      setLastSubmitted(undefined);
+      return;
+    }
+    let cancelled = false;
+    setLastSubmitted(undefined);
+    fetch(`/api/my-reports?name=${encodeURIComponent(form.member_name)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        const latest = data.submissions?.[0];
+        setLastSubmitted(
+          latest
+            ? {
+                week: latest.week_range,
+                date: new Date(latest.submitted_at).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                }),
+              }
+            : null
+        );
+      })
+      .catch(() => setLastSubmitted(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [form.member_name]);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -191,6 +224,13 @@ export default function Home() {
                 </option>
               ))}
             </select>
+            {form.member_name && lastSubmitted !== undefined && (
+              <div className="field-hint" style={{ marginTop: 6, marginBottom: 0 }}>
+                {lastSubmitted === null
+                  ? "No previous submissions found."
+                  : `You last submitted for ${lastSubmitted.week} on ${lastSubmitted.date}.`}
+              </div>
+            )}
           </div>
           <div className="field">
             <label htmlFor="week_range">Work Week</label>
@@ -271,7 +311,7 @@ export default function Home() {
             checked={isTest}
             onChange={(e) => setIsTest(e.target.checked)}
           />
-          This is a test submission — send the notification to me only
+          This is a test submission — only send the notification to my own email
         </label>
 
         <button className="btn-primary" type="submit" disabled={submitting}>

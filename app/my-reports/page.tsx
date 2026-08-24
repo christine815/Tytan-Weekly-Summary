@@ -147,6 +147,15 @@ export default function MyReports() {
                       Edit
                     </a>
                   )}
+                  <a
+                    className="nav-link"
+                    href={`/print/${s.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Print
+                  </a>
                   <span className={`chevron${open ? " is-open" : ""}`}>▶</span>
                 </div>
               </div>

@@ -1,6 +1,5 @@
 import { Resend } from "resend";
 import type { NewSubmission } from "./supabase";
-import { TEST_NOTIFY_EMAIL } from "./team";
 
 function escapeHtml(str: string) {
   return str
@@ -62,8 +61,8 @@ export function buildReportHtml(sub: NewSubmission, dashboardUrl?: string) {
  * leader configured (e.g. an unmanaged member), the email still goes
  * straight to the submitter instead of being skipped entirely — everyone
  * gets a copy of what they submitted. For a test submission, the "to" is
- * redirected to TEST_NOTIFY_EMAIL instead, so delivery can be confirmed
- * without emailing a real leader.
+ * redirected to the submitter's own email instead of the real leader, so
+ * anyone can confirm delivery works without pinging someone else.
  */
 export async function sendSubmissionNotification(
   sub: NewSubmission,
@@ -79,7 +78,7 @@ export async function sendSubmissionNotification(
     return { skipped: true, reason: "email not configured" };
   }
 
-  const to = sub.is_test ? TEST_NOTIFY_EMAIL : recipientEmail || sub.member_email;
+  const to = sub.is_test ? sub.member_email : recipientEmail || sub.member_email;
   // Don't CC if the submitter IS already the "to" recipient (avoids a duplicate).
   const cc = sub.member_email && sub.member_email !== to ? [sub.member_email] : undefined;
 

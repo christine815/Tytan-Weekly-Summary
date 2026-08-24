@@ -266,7 +266,18 @@ export default function Dashboard() {
                         })}
                       </div>
                     </div>
-                    <span className={`chevron${open ? " is-open" : ""}`}>▶</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <a
+                        className="nav-link"
+                        href={`/print/${s.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Print
+                      </a>
+                      <span className={`chevron${open ? " is-open" : ""}`}>▶</span>
+                    </div>
                   </div>
                   {open && (
                     <div className="submission-body">

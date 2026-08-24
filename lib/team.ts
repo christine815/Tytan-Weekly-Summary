@@ -13,10 +13,6 @@ export interface TeamMember {
 
 export const CEO_EMAIL = "britt@tytanteams.com";
 
-// Where test submissions get routed instead of the real recipient, so
-// people can confirm email delivery works without pinging a real leader.
-export const TEST_NOTIFY_EMAIL = "christine@tytanteams.com";
-
 // Single source of truth for the roster. Add/remove people here and the
 // form dropdown, the roll call, the notification routing, and the
 // dashboard's "Viewing as" filter all update automatically.
