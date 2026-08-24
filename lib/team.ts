@@ -68,7 +68,7 @@ export interface Viewer {
 }
 
 export const VIEWERS: Viewer[] = [
-  { id: "britt", label: "Britt Johnson", email: CEO_EMAIL, visibleNames: [], seesAll: true },
+  { id: "britt", label: "Britt", email: CEO_EMAIL, visibleNames: [], seesAll: true },
   {
     id: "richelle",
     label: "Richelle Manahan",
