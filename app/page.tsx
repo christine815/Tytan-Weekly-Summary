@@ -2,20 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { TEAM, findMember } from "@/lib/team";
-
-function currentWorkWeekLabel(): string {
-  const now = new Date();
-  const day = now.getDay(); // 0 = Sun
-  const monday = new Date(now);
-  const diffToMonday = day === 0 ? -6 : 1 - day;
-  monday.setDate(now.getDate() + diffToMonday);
-  const friday = new Date(monday);
-  friday.setDate(monday.getDate() + 4);
-
-  const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const year = friday.getFullYear();
-  return `${fmt(monday)}–${fmt(friday)}, ${year}`;
-}
+import { currentWorkWeekLabel } from "@/lib/week";
 
 const SECTIONS: {
   key:

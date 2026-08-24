@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [selectedWeek, setSelectedWeek] = useState<string>("");
   const [memberFilter, setMemberFilter] = useState<string>("");
   const [openId, setOpenId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetch("/api/submissions")
@@ -77,9 +78,47 @@ export default function Dashboard() {
     return submissions.filter((s) => {
       if (selectedWeek && s.week_range !== selectedWeek) return false;
       if (memberFilter && s.member_name !== memberFilter) return false;
+      if (search.trim()) {
+        const haystack = [
+          s.member_name,
+          s.shift_schedule,
+          ...SECTION_LABELS.map((sec) => String(s[sec.key] || "")),
+        ]
+          .join(" ")
+          .toLowerCase();
+        if (!haystack.includes(search.toLowerCase())) return false;
+      }
       return true;
     });
-  }, [submissions, selectedWeek, memberFilter]);
+  }, [submissions, selectedWeek, memberFilter, search]);
+
+  function exportCsv() {
+    const headers = [
+      "Member Name",
+      "Position",
+      "Shift Schedule",
+      "Work Week",
+      ...SECTION_LABELS.map((sec) => sec.title),
+      "Submitted At",
+    ];
+    const rows = visibleSubmissions.map((s) => [
+      s.member_name,
+      s.position,
+      s.shift_schedule,
+      s.week_range,
+      ...SECTION_LABELS.map((sec) => String(s[sec.key] || "")),
+      s.submitted_at,
+    ]);
+    const escapeCell = (val: string) => `"${String(val).replace(/"/g, '""')}"`;
+    const csv = [headers, ...rows].map((row) => row.map(escapeCell).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tytan-weekly-summaries-${selectedWeek || "export"}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   async function handleLogout() {
     await fetch("/api/dashboard-logout", { method: "POST" });
@@ -185,6 +224,20 @@ export default function Dashboard() {
                 </option>
               ))}
             </select>
+            <input
+              type="text"
+              placeholder="Search reports…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ maxWidth: 220 }}
+            />
+            <button
+              className="btn-secondary"
+              onClick={exportCsv}
+              disabled={visibleSubmissions.length === 0}
+            >
+              Export CSV
+            </button>
           </div>
 
           {visibleSubmissions.length === 0 ? (

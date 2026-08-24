@@ -20,6 +20,26 @@ export default function MyReports() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+
+  const EDIT_WINDOW_HOURS = 24;
+
+  function isEditable(submittedAt: string) {
+    const hoursSince = (Date.now() - new Date(submittedAt).getTime()) / (1000 * 60 * 60);
+    return hoursSince <= EDIT_WINDOW_HOURS;
+  }
+
+  const filtered = (submissions || []).filter((s) => {
+    if (!search.trim()) return true;
+    const haystack = [
+      s.week_range,
+      s.shift_schedule,
+      ...SECTION_LABELS.map((sec) => String(s[sec.key] || "")),
+    ]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(search.toLowerCase());
+  });
 
   async function handleLoad() {
     if (!name) return;
@@ -77,13 +97,28 @@ export default function MyReports() {
 
       {error && <div className="error-banner">{error}</div>}
 
+      {submissions !== null && submissions.length > 0 && (
+        <div className="field" style={{ maxWidth: 320 }}>
+          <input
+            type="text"
+            placeholder="Search your reports…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      )}
+
       {submissions !== null && submissions.length === 0 && (
         <div className="empty-state">No reports found for {name} yet.</div>
       )}
 
-      {submissions !== null &&
-        submissions.map((s) => {
+      {submissions !== null && submissions.length > 0 && filtered.length === 0 && (
+        <div className="empty-state">No reports match "{search}".</div>
+      )}
+
+      {filtered.map((s) => {
           const open = openId === s.id;
+          const editable = isEditable(s.submitted_at);
           return (
             <div className="submission-row" key={s.id}>
               <div className="submission-row-head" onClick={() => setOpenId(open ? null : s.id)}>
@@ -102,7 +137,18 @@ export default function MyReports() {
                     })}
                   </div>
                 </div>
-                <span className={`chevron${open ? " is-open" : ""}`}>▶</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  {editable && (
+                    <a
+                      className="nav-link"
+                      href={`/edit/${s.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Edit
+                    </a>
+                  )}
+                  <span className={`chevron${open ? " is-open" : ""}`}>▶</span>
+                </div>
               </div>
               {open && (
                 <div className="submission-body">

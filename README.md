@@ -119,6 +119,36 @@ Editor → New query → paste → Run) — it adds the two new columns
 saved. If you're setting up Supabase fresh, `supabase-schema.sql` already
 includes them.
 
+## What's new in this version
+
+- **Weekly reminder email**: every Friday at 11 PM UTC (Saturday 7 AM
+  Manila time), anyone who hasn't submitted their report for the current
+  work week gets a direct reminder email. This runs via Vercel Cron
+  (`vercel.json` + `app/api/cron/reminders/route.ts`) — see the new env
+  variable below.
+- **Edit window**: from "My Submitted Reports," anyone can edit their own
+  report within 24 hours of submitting it (an "Edit" link appears next to
+  reports still in that window). After 24 hours, it's locked.
+- **CSV export**: on the dashboard, "Export CSV" downloads whatever's
+  currently filtered (by week/member/search) as a spreadsheet-ready file.
+- **Search**: both the dashboard and "My Submitted Reports" now have a
+  search box that filters by keyword across all sections.
+
+### One more environment variable to add in Vercel
+
+| Key | Value |
+|---|---|
+| `CRON_SECRET` | Any long random string (this just proves the reminder request came from Vercel's own cron, not a random visitor hitting the URL) |
+
+**Important**: add this the same way as the dashboard passwords — make
+sure the "Production" environment box is checked, not just "Preview,"
+or it won't work on your live site (this was the exact issue you ran
+into with the dashboard passwords earlier).
+
+Vercel Cron Jobs are enabled by default on your plan, but if the
+reminder doesn't fire, check **Project → Settings → Cron Jobs** in
+Vercel to confirm it's listed and enabled.
+
 ## Updating the team roster
 
 Open `lib/team.ts`:
