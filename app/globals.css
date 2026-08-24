@@ -266,11 +266,11 @@ input[readonly] {
   width: 22px;
   height: 22px;
   border-radius: 5px;
-  background: var(--accent-tint);
-  color: var(--accent-dark);
+  background: var(--pending);
+  color: var(--ink);
   font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 700;
   margin-right: 8px;
 }
 
@@ -450,8 +450,9 @@ input[readonly] {
 }
 
 .submission-section {
-  padding: 14px 0;
+  padding: 14px 0 14px 14px;
   border-bottom: 1px solid var(--border);
+  border-left: 3px solid var(--pending);
 }
 
 .submission-section:last-child {
@@ -460,17 +461,19 @@ input[readonly] {
 
 .submission-section-title {
   font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 5px;
+  color: var(--ink);
+  margin-bottom: 6px;
 }
 
 .submission-section-body {
-  font-size: 13.5px;
-  line-height: 1.6;
+  font-size: 14.5px;
+  line-height: 1.65;
   white-space: pre-wrap;
+  color: #33355c;
 }
 
 .empty-state {
